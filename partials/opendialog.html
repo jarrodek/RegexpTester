@@ -1,0 +1,21 @@
+<div class="modal-dialog modal-lg" role="dialog" aria-labelledby="OpenModalTitle">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" ng-click="cancel()" aria-hidden="true">&times;</button>
+            <h3 id="OpenModalTitle">Open</h3>
+        </div>
+        <div class="modal-body">
+            <ul class="open-items">
+            <li ng-repeat="rg in items" ng-click="select(rg)" ng-class="{'selected':rg===selected.item}">
+                <span class="regexp-display-value">{{rg.regexp}}</span>
+                <span class="regexp-display-notes">{{rg.note}}</span>
+                <span class="regexp-display-date">{{rg.created| date:'short'}}</span>
+              </li>
+            </ul>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-default" ng-click="cancel()">Close</button>
+            <button ng-disabled="disabledSelect" class="btn btn-primary" ng-click="apply()">Select</button>
+        </div>
+    </div>
+</div>

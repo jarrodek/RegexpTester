@@ -1,0 +1,95 @@
+.middle{
+    vertical-align: middle;
+}
+label.normal{
+  font-weight: normal !important;
+}
+span.highlight{
+    box-shadow: rgba(255, 0, 0, 0.4) 2px 2px;
+    background-color: rgba(255, 0, 0, 0.2);
+    border-radius: 2px;
+    min-width: 2px;
+}
+span.replaceHighlight{
+    text-shadow: silver 1px 1px;
+    font-weight: bold;
+}
+.appresults{
+    width: 100%;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    padding: 2px;
+    word-break: normal;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-user-select: text;
+    cursor: text;
+}
+.manual-test{
+    float: right;
+}
+.modal.fade.in{
+    display: block;
+}
+.patterns-list{
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+.patterns-list > li{
+    padding: 3px 0;
+    font-size: 12px;
+    white-space: nowrap;
+}
+.patterns-list > li > span {
+    display: inline-block;
+    width: 100px;
+}
+.patters-group{
+    font-weight: bold;
+    display: block;
+}
+.open-items{
+    margin: 0;
+    padding: 0;
+}
+.open-items > li {
+    list-style: none;
+    margin: 3px 0;
+    padding: 3px 5px;
+    border-bottom: 1px #e5e5e5 dotted;
+    cursor: pointer;
+}
+
+
+.regexp-display-date,
+.regexp-display-notes,
+.regexp-display-value{
+    overflow: hidden;
+    line-height: 1.1em;
+    text-overflow: ellipsis;
+    display: inline-block;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+.regexp-display-date{
+    width: 29%;
+}
+.regexp-display-notes,
+.regexp-display-value{
+    width: 34%;
+}
+.regexp-display-date,
+.regexp-display-value {
+    font-size: 0.8em;
+    color: gray;
+}
+.open-items li.selected{
+    background-color: lightgray;
+}
+
+@media screen and (min-width: 768px){
+    .modal.fade .modal-dialog{
+        width: 900px;
+    }
+}
