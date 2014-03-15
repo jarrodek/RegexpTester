@@ -1,0 +1,64 @@
+{
+    "groups":[{
+        "name": "Character Classes",
+        "definitions": [
+            {"pattern": ".", "desc": "(The dot, the decimal point) matches any single character except the newline characters: \\n \\r \\u2028 or \\u2029.<br/><br/>Note that the m multiline flag doesn't change the dot behavior. So to match a pattern accross multiple lines the character set [^] can be used (if you don't mean an old version of IE, of course), it will match any character including newlines."},
+            {"pattern": "\\d", "desc": "Matches a digit character in the basic Latin alphabet. Equivalent to [0-9]."},
+            {"pattern": "\\D", "desc": "Matches any character that is not a digit in the basic Latin alphabet. Equivalent to [^0-9]."},
+            {"pattern": "\\w", "desc": "Matches any alphanumeric character from the basic Latin alphabet, including the underscore. Equivalent to [A-Za-z0-9_]."},
+            {"pattern": "\\W", "desc": "Matches any character that is not a word character from the basic Latin alphabet. Equivalent to [^A-Za-z0-9_]."},
+            {"pattern": "\\s", "desc": "Matches a single white space character, including space, tab, form feed, line feed and other unicode spaces. Equivalent to [ \\t\\r\\n]."},
+            {"pattern": "\\S", "desc": "Matches a single character other than white space (Not whitespace). Equivalent to [^ \\t\\r\\n]."},
+            {"pattern": "\\t", "desc": "Matches a tab."},
+            {"pattern": "\\r", "desc": "Matches a carriage return."},
+            {"pattern": "\\n", "desc": "Matches a linefeed."},
+            {"pattern": "\\v", "desc": "Matches a vertical tab."},
+            {"pattern": "\\f", "desc": "Matches a form-feed."},
+            {"pattern": "[\\b]", "desc": "Matches a backspace. (Not to be confused with \\b)"},
+            {"pattern": "\\0", "desc": "Matches a NUL character. Do not follow this with another digit."},
+            {"pattern": "\\cX", "desc": "Where X is a letter from A - Z. Matches a control character in a string."},
+            {"pattern": "\\xhh", "desc": "Matches the character with the code hh (two hexadecimal digits)"},
+            {"pattern": "\\uhhhh", "desc": "Matches the character with the Unicode value hhhh (four hexadecimal digits)."},
+            {"pattern": "\\", "desc": "For characters that are usually treated literally, indicates that the next character is special and not to be interpreted literally.<br/><br/>For example, /b/ matches the character 'b'. By placing a backslash in front of b, that is by using /\\b/, the character becomes special to mean match a word boundary.<br/><br/>or<br/>For characters that are usually treated specially, indicates that the next character is not special and should be interpreted literally."}
+        ]
+    },
+    {
+        "name": "Character Sets",
+        "definitions": [ 
+            {"pattern": "[xyz]","desc": "A character set. Matches any one of the enclosed characters. You can specify a range of characters by using a hyphen."},
+            {"pattern": "[^xyz]","desc": "A negated or complemented character set. That is, it matches anything that is not enclosed in the brackets. You can specify a range of characters by using a hyphen."}
+        ]
+    },
+    {
+        "name": "Boundaries",
+        "definitions": [
+            {"pattern": "^","desc": "Matches beginning of input. If the multiline flag is set to true, also matches immediately after a line break character."},
+            {"pattern": "$","desc": "Matches end of input. If the multiline flag is set to true, also matches immediately before a line break character."},
+            {"pattern": "\\b","desc": "Matches a zero-width word boundary, such as between a letter and a space. (Not to be confused with [\\b])"},
+            {"pattern": "\\B","desc": "Matches a zero-width non-word boundary, such as between two letters or between two spaces."}
+        ]
+    },
+    {
+        "name": "Grouping and back references",
+        "definitions": [
+            {"pattern": "(x)","desc": "Matches x and remembers the match. These are called capturing parentheses.<br/><br/>For example, /(foo)/ matches and remembers 'foo' in \"foo bar.\" The matched substring can be recalled from the resulting array's elements [1], ..., [n] or from the predefined RegExp object's properties $1, ..., $9.<br/><br/>Capturing groups have a performance penalty. If you don't need the matched substring to be recalled, prefer non-capturing parentheses (see below)."},
+            {"pattern": "\\n","desc": "Where n is a positive integer. A back reference to the last substring matching the n parenthetical in the regular expression (counting left parentheses).<br/><br/>For example, /apple(,)\\sorange\\1/ matches 'apple, orange,' in \"apple, orange, cherry, peach.\" A more complete example follows this table."},
+            {"pattern": "(?:x)","desc": "Matches x but does not remember the match. These are called non-capturing parentheses. The matched substring can not be recalled from the resulting array's elements [1], ..., [n] or from the predefined RegExp object's properties $1, ..., $9."}
+        ]
+    },
+    {
+        "name": "Quantifiers",
+        "definitions": [
+            {"pattern": "*","desc": "Matches the preceding item 0 or more times.<br/><br/>For example, /bo*/ matches 'boooo' in \"A ghost booooed\" and 'b' in \"A bird warbled\", but nothing in \"A goat grunted\"."},
+            {"pattern": "+","desc": "Matches the preceding item 1 or more times. Equivalent to {1,}.<br/><br/>For example, /a+/ matches the 'a' in \"candy\" and all the a's in \"caaaaaaandy\"."},
+            {"pattern": "*?<br/>+?","desc": "Matches like * and + from above, however the match is the smallest possible match.<br/><br/>For example, /\".*?\"/ matches '\"foo\"' in '\"foo\" \"bar\"' and does not match '\"foo\" \"bar\"' as without the ? behind the *."},
+            {"pattern": "?","desc": "Matches the preceding item 0 or 1 time.<br/><br/>For example, /e?le?/ matches the 'el' in \"angel\" and the 'le' in \"angle.\"<br/><br/>If used immediately after any of the quantifiers *, +, ?, or {}, makes the quantifier non-greedy (matching the minimum number of times), as opposed to the default, which is greedy (matching the maximum number of times).<br/><br/>Also used in lookahead assertions, described under (?=), (?!), and (?:) in this table."},
+            {"pattern": "x(?=y)","desc": "Matches x only if x is followed by y. For example, /Jack(?=Sprat)/ matches 'Jack' only if it is followed by 'Sprat'. /Jack(?=Sprat|Frost)/ matches 'Jack' only if it is followed by 'Sprat' or 'Frost'. However, neither 'Sprat' nor 'Frost' is part of the match results."},
+            {"pattern": "x(?!y)","desc": "Matches x only if x is not followed by y. For example, /\\d+(?!\\.)/ matches a number only if it is not followed by a decimal point.<br/><br/>/\\d+(?!\\.)/.exec(\"3.141\") matches 141 but not 3.141."},
+            {"pattern": "x|y","desc": "Matches either x or y.<br/><br/>For example, /green|red/ matches 'green' in \"green apple\" and 'red' in \"red apple.\""},
+            {"pattern": "{n}","desc": "Where n is a positive integer. Matches exactly n occurrences of the preceding item.<br/><br/>For example, /a{2}/ doesn't match the 'a' in \"candy,\" but it matches all of the a's in \"caandy,\" and the first two a's in \"caaandy.\""},
+            {"pattern": "{n,}","desc": "Where n is a positive integer. Matches at least n occurrences of the preceding item.<br/><br/>For example, /a{2,}/ doesn't match the 'a' in \"candy\", but matches all of the a's in \"caandy\" and in \"caaaaaaandy.\""},
+            {"pattern": "{n,m}","desc": "Where n and m are positive integers. Matches at least n and at most m occurrences of the preceding item.<br/><br/>For example, /a{1,3}/ matches nothing in \"cndy\", the 'a' in \"candy,\" the two a's in \"caandy,\" and the first three a's in \"caaaaaaandy\". Notice that when matching \"caaaaaaandy\", the match is \"aaa\", even though the original string had more a's in it."}
+        ]
+    }]
+}

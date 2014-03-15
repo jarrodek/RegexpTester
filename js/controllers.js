@@ -24,7 +24,6 @@ function RegexpController($scope, $RegexpValues, $RegexpWorker, $OpenSaveService
         $scope.result.highlight = $scope.result.replace = '';
         $scope.searchFound = 0;
     }
-    
     $scope.runTest = function() {
         if (!$scope.data.regexp.trim()) {
             cleanupResults();
@@ -99,17 +98,41 @@ ResultController.$inject = ['$scope'];
  * @param {type} $modal
  * @returns {ModalHelpCtrl}
  */
-function ModalHelpCtrl($scope, $modal) {
-    var ModalInstanceCtrl = function($scope, $modalInstance) {
+function ModalHelpCtrl($scope, $modal, $http) {
+    var ModalInstanceCtrl = function($scope, $modalInstance,$http) {
+        
+        $scope.data = null;
         $scope.cancel = function() {
             $modalInstance.dismiss('cancel');
         };
+        
+        $http.get(chrome.runtime.getURL('data/patterns_definitions.json')).then(function(data){
+            $scope.data = data.data;
+        });
     };
     $scope.openHelpDialog = function() {
         $modal.open({
             templateUrl: 'partials/patternsdialog.html',
-            controller: ModalInstanceCtrl
+            controller: ModalInstanceCtrl,
+            resolve: {
+                '$http': function() {
+                    return $http;
+                }
+            }
         });
     };
 }
-ModalHelpCtrl.$inject = ['$scope', '$modal'];
+ModalHelpCtrl.$inject = ['$scope', '$modal', '$http'];
+
+
+function AsideController($scope, $StoredDataService, $timeout, $RegexpValues,$SyncService) {
+    $scope.savedItems = $StoredDataService;
+    $scope.select = function(item){
+        $RegexpValues.updateCurrent(item);
+        $SyncService.sync();
+    };
+    $timeout(function(){
+        $StoredDataService.restore();
+    },0);
+}
+AsideController.$inject = ['$scope', '$StoredDataService','$timeout','$RegexpValues','$SyncService'];

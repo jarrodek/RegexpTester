@@ -5,8 +5,12 @@
             <h3 id="OpenModalTitle">Open</h3>
         </div>
         <div class="modal-body">
+            
+            <alert ng-if="items.items.length === 0" type="info">You don't have any saved data. Use ctrl+s or command+s to save current data.</alert>
+            
+            
             <ul class="open-items">
-            <li ng-repeat="rg in items" ng-click="select(rg)" ng-class="{'selected':rg===selected.item}">
+            <li ng-repeat="rg in items.items" ng-click="select(rg)" ng-class="{'selected':rg===selected.item}">
                 <span class="regexp-display-value">{{rg.regexp}}</span>
                 <span class="regexp-display-notes">{{rg.note}}</span>
                 <span class="regexp-display-date">{{rg.created| date:'short'}}</span>

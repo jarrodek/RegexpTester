@@ -1,13 +1,21 @@
 {
-  "name": "Regexp Tester",
-  "version": "0.0.1",
+  "name": "__MSG_extensionName__",
+  "description": "__MSG_extensionDesc__",
+  "version": "0.3",
   "manifest_version": 2,
   "app": {
     "background": {
       "scripts": ["js/event.js"]
     }
   },
+  "icons": { 
+      "16": "img/emblem-brackets-16.png",
+      "32": "img/emblem-brackets-32.png",
+      "48": "img/emblem-brackets-48.png",
+      "128": "img/emblem-brackets-128.png"
+  },
   "permissions": [
-    "storage", "clipboardRead"
-  ]
+    "storage"
+  ],
+  "default_locale": "en"
 }

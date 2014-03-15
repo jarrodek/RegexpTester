@@ -1,5 +1,5 @@
 html, body{height: 100%;}
-body{background-color: #e5e5e5;}
+body{background-color: #e5e5e5;display: flex;}
 .middle{
     vertical-align: middle;
 }
@@ -45,7 +45,14 @@ span.replaceHighlight{
 }
 .patterns-list > li > span {
     display: inline-block;
-    width: 100px;
+    min-width: 100px;
+    vertical-align: top;
+}
+.patterns-list > li > span:first-child {
+    font-weight: bold;
+}
+.pattern-group{
+    margin-bottom: 20px;
 }
 .patters-group{
     font-weight: bold;
@@ -68,6 +75,7 @@ span.replaceHighlight{
 }
 .open-items > li > span {
     display: block;
+    align-self: center;
 }
 
 .regexp-display-date,
@@ -80,9 +88,12 @@ span.replaceHighlight{
     white-space: nowrap;
     vertical-align: middle;
 }
-.regexp-display-date{
+aside .regexp-display-date{
     min-width: 90px;
     text-align: right;
+}
+.regexp-display-date{
+    min-width: 95px;
 }
 .regexp-display-value{
     width: 34%;
@@ -97,9 +108,11 @@ span.replaceHighlight{
     color: gray;
 }
 .open-items li.selected,
-.open-items li.selected:hover{
+.open-items li.selected:hover,
+.open-items li:active{
     background-color: lightgray;
 }
+
 .fullHeight{
     overflow: auto;
 }
@@ -113,9 +126,35 @@ span.replaceHighlight{
     max-height: 60vh;
     overflow: auto;
 }
-
+.open-panel-aside{
+    display: none;
+}
+body > aside > h2 {
+    font-size: 18px;
+    margin-top: 15px;
+}
+.no-open-items {
+    font-style: italic;
+}
 @media screen and (min-width: 768px){
     .modal.fade .modal-dialog{
         width: 95%;
+    }
+}
+@media (min-width: 1450px){
+    .container{
+        margin-right: 15px;
+        flex: 1 1 auto;
+        width: 100%;
+        display: block;
+    }
+    .open-panel-aside{
+        display: block !important;
+        /*border: 1px red solid;*/
+        vertical-align: top;
+        margin-right: 30px;
+        flex: 0 1 auto;
+        padding-left: 15px;
+        padding-right: 15px;
     }
 }

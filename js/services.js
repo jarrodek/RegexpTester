@@ -77,7 +77,20 @@ regexpServices.factory('$ChromeStorage', ['$q', function($q) {
             'get': restoreData
         };
     }]);
-
+/**
+ * @ngdoc service
+ * @name $RegexpWorker
+ * 
+ * @description This serwice will run background worker to evaluate provided by the user RegExp
+ * and to highlight and/or replace matched from search string.
+ * Worker will return HTML code ready to be inserted to the output window.
+ * 
+ * When form will change during background work and another worker should be used the app
+ * will force kill previous worker and create new one.
+ * @param {$q} $q Dependency for $q object
+ * @param {$timeout} $timeout Dependency for $timeout object
+ * @param {$RegexpValues} $RegexpValues Dependency for $RegexpValues service
+ */
 regexpServices.factory('$RegexpWorker', ['$q', '$timeout', '$RegexpValues', function($q, $timeout, $RegexpValues) {
         var currentWorker = null;
         var timeoutPromise = null;
@@ -129,7 +142,10 @@ regexpServices.factory('$RegexpWorker', ['$q', '$timeout', '$RegexpValues', func
         };
     }]);
 /**
- * Service to keep current form in sync storage.
+ * @ngdoc service
+ * @name $SyncService
+ * 
+ * @description Service to keep current form in sync storage.
  * Chrome's synch storage has limitations of amount of operations per minute 
  * so the app should update sync storage only for a fixed period of time
  * (after something change).
@@ -139,14 +155,34 @@ regexpServices.factory('$RegexpWorker', ['$q', '$timeout', '$RegexpValues', func
 regexpServices.factory('$SyncService', ['$ChromeStorage', '$RegexpValues', '$timeout', 'APP_EVENTS', '$rootScope', function($ChromeStorage, $RegexpValues, $timeout, APP_EVENTS, $rootScope) {
     var service = {
         timeout: null,
+        /**
+         * @ngdoc getter
+         * @name $SyncService.delay
+         * @function
+         * 
+         * @description Number of miliseconds between the app can write to sync storage.
+         * Sync storage have limited number of write operations per minute/hours so it should be limited by the app.
+         * @returns {Number} Number of miliseconds
+         */
         get delay(){ return 10000; },
+        /**
+         * @ngdoc function
+         * @name $SyncService.sync
+         * @function
+         * 
+         * @description Perform a write operation on a sync storage.
+         * If latest write operation has been performed less than {@link $SyncService.delay} miliseconds ago it do nothing and next write operation will be performed after set period of time.
+         * 
+         * @returns {undefined}
+         */
         sync: function(){
             if (this.timeout !== null) {
-                $timeout.cancel(this.timeout);
-                this.timeout = null;
+//                $timeout.cancel(this.timeout);
+//                this.timeout = null;
+                return;
             }
             this.timeout = $timeout(function() {
-                $ChromeStorage.set('sync', {'latest': $RegexpValues}).then(function(){
+                $ChromeStorage.set('sync', {'latest': $RegexpValues.storeValues}).then(function(){
                     $rootScope.$broadcast(APP_EVENTS.regexpValuesSynced);
                 }, function(reason){
                     console.error('There was an error during sync save.', reason);
@@ -173,29 +209,15 @@ regexpServices.factory('$SyncService', ['$ChromeStorage', '$RegexpValues', '$tim
     };
     return service;
 }]);
+/**
+ * @ngdoc service
+ * @name $RegexpValues
+ * 
+ * @description This service is used to perform CRUD operations on current form values.
+ */
 regexpServices.factory('$RegexpValues', ['$q', '$ChromeStorage', '$indexedDB', '$rootScope', 'APP_EVENTS', function($q, $ChromeStorage, $indexedDB, $rootScope, APP_EVENTS) {
 
-        var innerFunctions = ['store', 'restore', 'save', 'open'];
-
-        /**
-         * Creates a new object with current values. 
-         * This object is ready to store either in local/sync storage or IndexedDb
-         * @return {Object} current values for the RegExp form.
-         */
-        function createStoreValues() {
-            var res = {};
-            for (var _key in data) {
-                if (innerFunctions.indexOf(_key) !== -1)
-                    continue;
-                if (typeof data[_key] !== 'function') {
-                    res[_key] = data[_key];
-                }
-            }
-            return res;
-        }
-
-
-        var data = {
+        var service = {
             'regexp': '',
             'search': '',
             'replace': '',
@@ -203,65 +225,128 @@ regexpServices.factory('$RegexpValues', ['$q', '$ChromeStorage', '$indexedDB', '
             'global': true,
             'insensitive': false,
             'autotest': false,
+            /**
+             * @ngdoc getter
+             * @name $RegexpValues.storeValues
+             * @function
+             * 
+             * @description Creates a new object with current values. 
+             * This object is ready to store either in local/sync storage or IndexedDb
+             * 
+             * @returns {Object} current values for the RegExp form.
+             */
+            get storeValues(){
+                var res = {};
+                
+                res.regexp = service.regexp;
+                res.search = service.search;
+                res.replace = service.replace;
+                res.multiline = service.multiline;
+                res.insensitive = service.insensitive;
+                res.global = service.global;
+                res.autotest = service.autotest;
+                
+                return res;
+            },
+            /**
+             * @ngdoc method
+             * @name $RegexpValues.store
+             * @function
+             * 
+             * @description Store current value to local storage for further use during app's bootstrap.
+             * It can't use sync storage here because of limitations of sync store (write operations limit).
+             * This function should be called each time the form change.
+             * 
+             * @returns {$q@call;defer.promise}
+             */
             'store': function() {
                 var deferred = $q.defer();
-                var res = {};
-                for (var _key in this) {
-                    if (innerFunctions.indexOf(_key) !== -1)
-                        continue;
-
-                    if (typeof this[_key] !== 'function') {
-                        res[_key] = this[_key];
-                    }
-                }
-                $ChromeStorage.set('local', {'latest': res}).then(deferred.resolve, deferred.reject);
+                $ChromeStorage.set('local', {'latest': this.storeValues}).then(deferred.resolve, deferred.reject);
                 return deferred.promise;
             },
+            /**
+             * @ngdoc method
+             * @name $RegexpValues.restore
+             * @function
+             * 
+             * @description Restore lates form values from sync/local storage.
+             * It will propagate itself with restored values (if any).
+             * This method will check sync storage in the first place. If will not find a "latest" key it will try to find it in local storage.
+             * If lates fails it do nothing.
+             * 
+             * @returns {undefined}
+             */
             'restore': function() {
-                var ctx = this;
-
-                function fillObject(restored) {
-                    for (var _key in restored) {
-                        if (innerFunctions.indexOf(_key) !== -1)
-                            continue;
-                        if (typeof restored[_key] !== 'function') {
-                            ctx[_key] = restored[_key];
-                        }
-                    }
-                }
-
                 function fallback() {
-                    $ChromeStorage.get('local', {'latest': null}).then(function(data) {
-                        fillObject(data.latest);
-                    }.bind(this), function(reason) {
+                    $ChromeStorage.get('local', {'latest': null}).then(function(restored){
+                        if (!restored.latest) {
+                            return;
+                        }
+                        service.updateCurrent(restored.latest);
+                    }, function(reason) {
                         console.error('Error restoring app data', reason);
                         $rootScope.$broadcast(APP_EVENTS.errorOccured, 'Error restoring app data', reason);
                     });
                 }
-
-                $ChromeStorage.get('sync', {'latest': null}).then(function(data) {
-                    if (!data.latest) {
+                
+                $ChromeStorage.get('sync', {'latest': null}).then(function(restored) {
+                    if (!restored.latest) {
                         fallback();
                         return;
                     }
-                    fillObject(data.latest);
+                    service.updateCurrent(restored.latest);
                 }.bind(this), function(reason) {
                     console.error('Error restoring app data', reason);
                     fallback();
                 });
 
             },
+            /**
+             * @ngdoc getter
+             * @name $RegexpValues.key
+             * @function
+             * 
+             * @description Generate DB's key value for current form.
+             * It can be used to find a record already created from current form
+             * or to create key value for new DB ibject
+             * 
+             * @returns {String} Generated key
+             */
+            get key(){
+                return service.regexp + '|' + service.multiline + '|' + service.insensitive + '|' + service.global;
+            },
+            /**
+             * @ngdoc method
+             * @name $RegexpValues.save
+             * @function
+             * 
+             * @description Save current values to IndexedDB.
+             * 
+             * @param {String} note Optional note as a name for DB record.
+             * @returns {$q@call;defer.promise}
+             */
             'save': function(note) {
                 var store = $indexedDB.objectStore('regexp_store');
-                var data = createStoreValues();
+                var data = service.storeValues;
                 data.note = note || '';
                 data.created = Date.now();
+                data.key = service.key;
                 var deferred = $q.defer();
                 store.upsert(data).then(function(result) {
                     deferred.resolve(result);
                 }, deferred.reject);
                 return deferred.promise;
             },
+            /**
+             * @ngdoc method
+             * @name $RegexpValues.open
+             * @function
+             * 
+             * @description Open saved form value from IndexedDb
+             * 
+             * @param {any} id Key for stored data.
+             * @returns {$q@call;defer.promise}
+             */
             'open': function(id) {
                 var store = $indexedDB.objectStore('regexp_store');
                 var deferred = $q.defer();
@@ -271,24 +356,59 @@ regexpServices.factory('$RegexpValues', ['$q', '$ChromeStorage', '$indexedDB', '
                 }, deferred.reject);
                 return deferred.promise;
             },
+            /**
+             * @ngdoc getter
+             * @name $RegexpValues.modifiers
+             * @getter
+             * 
+             * @description Get RegExp object modigiers from current values.
+             * 
+             * @returns {String} modifiers for RegExp object.
+             */
             get modifiers(){
                 var result = '';
-                if (data.global) {
+                if (service.global) {
                     result += 'g';
                 }
-                if (data.insensitive) {
+                if (service.insensitive) {
                     result += 'i';
                 }
-                if (data.multiline) {
+                if (service.multiline) {
                     result += 'm';
                 }
                 return result;
+            },
+            /**
+             * @ngdoc method
+             * @name $RegexpValues.update
+             * @function
+             * 
+             * @description update form values from other object (restored from local storage or DB).
+             * 
+             * @param {Object} rg Restored object
+             * @returns {undefined} Nothing
+             */
+            updateCurrent: function(rg){
+                
+                service.regexp = rg.regexp;
+                service.search = rg.search;
+                service.replace = rg.replace;
+                service.multiline = rg.multiline;
+                service.insensitive = rg.insensitive;
+                service.global = rg.global;
+                service.autotest = rg.autotest;
+                service.store();
             }
         };
-        return data;
+        return service;
     }]);
 
-
+/**
+ * @ngdoc service
+ * @name $MouseTrapService
+ * 
+ * @description This service is a wrapper for MouseTrap lib.
+ */
 regexpServices.factory('$MouseTrapService', ['$q', function($q) {
         function register(cmd) {
             var defered = $q.defer();
@@ -299,7 +419,13 @@ regexpServices.factory('$MouseTrapService', ['$q', function($q) {
         }
         return register;
     }]);
-regexpServices.factory('$OpenSaveService', ['$q','$MouseTrapService','$modal','$RegexpValues','$indexedDB','$rootScope','APP_EVENTS', function($q,$MouseTrapService,$modal,$RegexpValues,$indexedDB,$rootScope,APP_EVENTS) {
+/**
+ * @ngdoc service
+ * @name $OpenSaveService
+ * 
+ * @description This service is performs open and save operations called by the user.
+ */
+regexpServices.factory('$OpenSaveService', ['$q','$MouseTrapService','$modal','$RegexpValues','$indexedDB','$SyncService','$StoredDataService','$rootScope','APP_EVENTS', function($q,$MouseTrapService,$modal,$RegexpValues,$indexedDB,$SyncService,$StoredDataService,$rootScope,APP_EVENTS) {
         var saveModal = null, openModal = null;
         
         function openAction(){
@@ -310,8 +436,8 @@ regexpServices.factory('$OpenSaveService', ['$q','$MouseTrapService','$modal','$
                 templateUrl: 'partials/opendialog.html',
                 controller: OpenDialogCtrl,
                 resolve: {
-                    '$indexedDB': function() {
-                        return $indexedDB;
+                    '$StoredDataService': function() {
+                        return $StoredDataService;
                     },
                     '$rootScope': function(){
                         return $rootScope;
@@ -323,14 +449,8 @@ regexpServices.factory('$OpenSaveService', ['$q','$MouseTrapService','$modal','$
             });
             openModal.result.then(function(rg) {
                 openModal = null;
-                $RegexpValues.regexp = rg.regexp;
-                $RegexpValues.search = rg.search;
-                $RegexpValues.replace = rg.replace;
-                $RegexpValues.multiline = rg.multiline;
-                $RegexpValues.insensitive = rg.insensitive;
-                $RegexpValues.global = rg.global;
-                $RegexpValues.autotest = rg.autotest;
-                $RegexpValues.store();
+                $RegexpValues.updateCurrent(rg);
+                $SyncService.sync();
             }, function() {
                 openModal = null;
                 //cancel or esc
@@ -344,7 +464,6 @@ regexpServices.factory('$OpenSaveService', ['$q','$MouseTrapService','$modal','$
                 $rootScope.$broadcast(APP_EVENTS.errorOccured, 'You must enter regexp first.');
                 return;
             }
-            
             
             saveModal = $modal.open({
                 templateUrl: 'partials/savedialog.html',
@@ -360,8 +479,9 @@ regexpServices.factory('$OpenSaveService', ['$q','$MouseTrapService','$modal','$
             });
             saveModal.result.then(function(note) {
                 saveModal = null;
-                $RegexpValues.save(note);
-                $rootScope.$broadcast(APP_EVENTS.regexpValuesSaved);
+                $RegexpValues.save(note).then(function(savedKey){
+                    $rootScope.$broadcast(APP_EVENTS.regexpValuesSaved,savedKey);
+                });
             }, function() {
                 saveModal = null;
                 //cancel or esc
@@ -378,7 +498,7 @@ regexpServices.factory('$OpenSaveService', ['$q','$MouseTrapService','$modal','$
             };
             
             var checkCurrentSaved = function(){
-                var key = $RegexpValues.regexp;
+                var key = $RegexpValues.key;
                 var store = $indexedDB.objectStore('regexp_store');
                 store.find(key).then(function(item) {
                     if(!!item){
@@ -391,25 +511,13 @@ regexpServices.factory('$OpenSaveService', ['$q','$MouseTrapService','$modal','$
             };
             checkCurrentSaved();
         }
-        function OpenDialogCtrl($scope, $modalInstance, $indexedDB,$rootScope,APP_EVENTS) {
-            $scope.items = [];
+        function OpenDialogCtrl($scope, $modalInstance, $StoredDataService, $rootScope,APP_EVENTS) {
+            $scope.items = $StoredDataService;
             $scope.selected = {
                 item: null
             };
             $scope.loading = true;
             $scope.disabledSelect = true;
-            function restoreAll() {
-                var store = $indexedDB.objectStore('regexp_store');
-                store.getAll().then(function(items) {
-                    $scope.loading = false;
-                    $scope.items = items;
-                }, function(reason) {
-                    //todo: error message
-                    $rootScope.$broadcast(APP_EVENTS.errorOccured, 'There was an error retriving data from database :( Try again.');
-                });
-            }
-
-            restoreAll();
             $scope.select = function(item) {
                 $scope.selected.item = item;
                 $scope.disabledSelect = false;
@@ -434,3 +542,32 @@ regexpServices.factory('$OpenSaveService', ['$q','$MouseTrapService','$modal','$
             'save': saveAction
         };
     }]);
+/**
+ * @ngdoc service
+ * @name $StoredDataService
+ * 
+ * @description This service is used as a model for saved DB items.
+ */
+regexpServices.factory('$StoredDataService', ['$q','$indexedDB','$rootScope','APP_EVENTS', function($q,$indexedDB,$rootScope,APP_EVENTS) {
+    var model = {
+        items: [],
+        restore: function(){
+            var defered = $q.defer();
+            var store = $indexedDB.objectStore('regexp_store');
+            store.getAll().then(function(items) {
+                model.items = items;
+                defered.resolve(items);
+            }, function(reason) {
+                defered.reject(reason);
+            });
+            return defered.promise;
+        }
+    };
+     
+    $rootScope.$on(APP_EVENTS.regexpValuesSaved, function(e, item){
+        model.restore();
+        //model.items.push(item);
+        //console.log(item);
+    });
+    return model;
+}]);

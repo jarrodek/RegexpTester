@@ -6,127 +6,22 @@
         </div>
         <div class="modal-body">
             <div class="dialog-content">
-                <span i18n-content="dialogPatternsExplMain">As a pattern you can use following expressions:</span>
-                <span i18n-content="dialogPatternsBrackets" class="patters-group">Brackets</span>
-                <ul class="patterns-list">
-                    <li>
-                        <span>[abc]</span>Find any character between the brackets
-                    </li>
-                    <li>
-                        <span>[^abc]</span>Find any character not between the brackets
-                    </li>
-                    <li>
-                        <span>[0-9]</span>Find any digit from 0 to 9
-                    </li>
-                    <li>
-                        <span>[A-Z]</span>Find any character from uppercase A to uppercase Z
-                    </li>
-                    <li>
-                        <span>[a-z]</span>Find any character from lowercase a to lowercase z
-                    </li>
-                    <li>
-                        <span>[A-z]</span>Find any character from uppercase A to lowercase z
-                    </li>
-                    <li>
-                        <span>[adgk]</span>Find any character in the given set
-                    </li>
-                    <li>
-                        <span>[^adgk]</span>Find any character outside the given set
-                    </li>
-                    <li>
-                        <span>(red|blue|green)</span>Find any of the alternatives specified
-                    </li>
-                </ul>
-                <span class="patters-group">Metacharacters</span>
-                <ul class="patterns-list">
-                    <li>
-                        <span>.</span>Find a single character, except newline or line terminator
-                    </li>
-                    <li>
-                        <span>\w</span>Find a word character
-                    </li>
-                    <li>
-                        <span>\W</span>Find a non-word character
-                    </li>
-                    <li>
-                        <span>\d</span>Find a digit
-                    </li>
-                    <li>
-                        <span>\D</span>Find a non-digit character
-                    </li>
-                    <li>
-                        <span>\s</span>Find a whitespace character
-                    </li>
-                    <li>
-                        <span>\S</span>Find a non-whitespace character
-                    </li>
-                    <li>
-                        <span>\b</span>Find a match at the beginning/end of a word
-                    </li>
-                    <li>
-                        <span>\B</span>Find a match not at the beginning/end of a word
-                    </li>
-                    <li>
-                        <span>\0</span>Find a NULL character
-                    </li>
-                    <li>
-                        <span>\n</span>Find a new line character
-                    </li>
-                    <li>
-                        <span>\f</span>Find a form feed character
-                    </li>
-                    <li>
-                        <span>\r</span>Find a carriage return character
-                    </li>
-                    <li>
-                        <span>\t</span>Find a tab character
-                    </li>
-                    <li>
-                        <span>\v</span>Find a vertical tab character
-                    </li>
-                    <li>
-                        <span>\xxx</span>Find the character specified by an octal number xxx
-                    </li>
-                    <li>
-                        <span>\xdd</span>Find the character specified by a hexadecimal number dd
-                    </li>
-                    <li>
-                        <span>\uxxxx</span>Find the Unicode character specified by a hexadecimal number xxxx
-                    </li>
-                </ul>
-                <span class="patters-group">Quantifiers</span>
-                <ul class="patterns-list">
-                    <li>
-                        <span>n+</span>Matches any string that contains at least one n
-                    </li>
-                    <li>
-                        <span>n*</span>Matches any string that contains zero or more occurrences of n
-                    </li>
-                    <li>
-                        <span>n?</span>Matches any string that contains zero or one occurrences of n
-                    </li>
-                    <li>
-                        <span>n{X}</span>Matches any string that contains a sequence of X n's
-                    </li>
-                    <li>
-                        <span>n{X,Y}</span>Matches any string that contains a sequence of X to Y n's
-                    </li>
-                    <li>
-                        <span>n{X,}</span>Matches any string that contains a sequence of at least X n's
-                    </li>
-                    <li>
-                        <span>n$</span>Matches any string with n at the end of it
-                    </li>
-                    <li>
-                        <span>^n</span>Matches any string with n at the beginning of it
-                    </li>
-                    <li>
-                        <span>?=n</span>Matches any string that is followed by a specific string n
-                    </li>
-                    <li>
-                        <span>?!n</span>Matches any string that is not followed by a specific string n
-                    </li>
-                </ul>
+                <p>Learn more at <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/RegExp">developer.mozilla.org</a></p>
+                
+                <alert ng-if="!data" type="info">wait a sec...</alert>
+                
+                <div ng-repeat="group in data.groups" class="pattern-group">
+                    <span class="patters-group">{{group.name}}</span>
+                    <ul class="patterns-list">
+                        <li ng-repeat="d in group.definitions">
+                            <span ng-bind-html="d.pattern"></span><span ng-bind-html="d.desc"></span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="credits">
+                    <p>Definitions above came from Mozilla Developers Center <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/RegExp">https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/RegExp</a> and are distributed under the Creative Commons Attribution-ShareAlike license.</p>
+                </div>
             </div>
         </div>
         <div class="modal-footer">

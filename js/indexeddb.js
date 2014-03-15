@@ -197,7 +197,7 @@ angular.module('xc.indexedDB', []).provider('$indexedDB', function() {
                     if (angular.isArray(data)) {
                         data.forEach(function(item){
                             req = store.add(item);
-                            req.onsuccess = req.onerror = function(e) { 
+                            store.transaction.oncomplete = store.transaction.onerror = function(e) { 
                                 $rootScope.$apply(function(){
                                     d.resolve(e.target.result); 
                                 });
@@ -205,7 +205,7 @@ angular.module('xc.indexedDB', []).provider('$indexedDB', function() {
                         });
                     } else {
                         req = store.add(data);
-                        req.onsuccess = req.onerror = function(e) { 
+                        store.transaction.oncomplete = store.transaction.onerror = function(e) { 
                             $rootScope.$apply(function(){
                                 d.resolve(e.target.result); 
                             });
@@ -234,7 +234,8 @@ angular.module('xc.indexedDB', []).provider('$indexedDB', function() {
                     if (angular.isArray(data)) {
                         data.forEach(function(item){
                             req = store.put(item);
-                            req.onsuccess = req.onerror = function(e) { 
+                            //req.onsuccess = req.onerror = function(e) { 
+                            store.transaction.oncomplete = store.transaction.onerror = function(e){
                                 $rootScope.$apply(function(){
                                     d.resolve(e.target.result); 
                                 });
@@ -242,9 +243,9 @@ angular.module('xc.indexedDB', []).provider('$indexedDB', function() {
                         });
                     } else {
                         req = store.put(data);
-                        req.onsuccess = req.onerror = function(e) { 
+                        store.transaction.oncomplete = store.transaction.onerror = function(e){
                             $rootScope.$apply(function(){
-                                d.resolve(e.target.result); 
+                                d.resolve(e.target.result);
                             });
                         };
                     }
@@ -265,12 +266,14 @@ angular.module('xc.indexedDB', []).provider('$indexedDB', function() {
             "delete": function(key) {
                 var d = $q.defer();
                 return this.internalObjectStore(this.storeName, READWRITE).then(function(store){
-                    var req = store.delete(key);
-                    req.onsuccess = req.onerror = function(e) { 
+//                    var req = store.delete(key);
+//                    req.onsuccess = req.onerror = function(e) { 
+                    store.transaction.oncomplete = store.transaction.onerror = function(e){
                         $rootScope.$apply(function(){
                             d.resolve(e.target.result); 
                         });
                     };
+                    store.delete(key);
                     return d.promise;
                 });
             },
@@ -287,12 +290,14 @@ angular.module('xc.indexedDB', []).provider('$indexedDB', function() {
             "clear": function() {
                 var d = $q.defer();
                 return this.internalObjectStore(this.storeName, READWRITE).then(function(store){
-                    var req = store.clear();
-                    req.onsuccess = req.onerror = function(e) { 
+//                    var req = store.clear();
+//                    req.onsuccess = req.onerror = function(e) { 
+                    store.transaction.oncomplete = store.transaction.onerror = function(e){
                         $rootScope.$apply(function(){
                             d.resolve(e.target.result); 
                         });
                     };
+                    store.clear();
                     return d.promise;
                 });                
             },

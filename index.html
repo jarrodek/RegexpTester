@@ -9,6 +9,18 @@
         <base target="_blank">
     </head>
     <body data-ng-controller="RegexpController">
+        <aside ng-controller="AsideController" class="open-panel-aside">
+            <h2>Saved regexp's</h2>
+            <p ng-if="savedItems.items.length === 0" class="no-open-items" ng-if="items.length === 0">Nothing to show yet.</p>
+            <ul ng-if="savedItems.items.length > 0" class="open-items">
+                <li ng-repeat="item in savedItems.items" ng-click="select(item)">
+                    <span class="regexp-display-value">{{item.regexp}}</span>
+                    <span class="regexp-display-notes">{{item.note}}</span>
+                    <span class="regexp-display-date">{{item.created| date:'short'}}</span>
+                </li>
+            </ul>
+        </aside>
+        
         <div class="container">
             <section id="main">
                 <div class="row" ng-if="error">

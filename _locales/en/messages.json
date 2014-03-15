@@ -1,0 +1,86 @@
+{
+   "althelpPatterns": {
+      "description": "",
+      "message": "Help - patterns"
+   },
+   "dialogClose": {
+      "description": "",
+      "message": "Close"
+   },
+   "dialogPatternsBrackets": {
+      "description": "",
+      "message": "Brackets"
+   },
+   "dialogPatternsExplMain": {
+      "description": "",
+      "message": "As a pattern you can use following expressions:"
+   },
+   "dialogTitlePatterns": {
+      "description": "",
+      "message": "Patterns"
+   },
+   "extensionDesc": {
+      "description": "Extension main description.",
+      "message": "Create and test regular expressions."
+   },
+   "extensionName": {
+      "description": "Extension main name.",
+      "message": "RegExp Tester App"
+   },
+   "indexHeaderMain": {
+      "description": "",
+      "message": "RegExp tester"
+   },
+   "labelCiOption": {
+      "description": "",
+      "message": "case-insensitive"
+   },
+   "labelGlobalOption": {
+      "description": "",
+      "message": "global"
+   },
+   "labelMultilineOption": {
+      "description": "",
+      "message": "multiline"
+   },
+   "labelPattern": {
+      "description": "",
+      "message": "Pattern"
+   },
+   "labelReplace": {
+      "description": "",
+      "message": "Replace"
+   },
+   "labelSearch": {
+      "description": "",
+      "message": "Search text"
+   },
+   "tabHeaderMatch": {
+      "description": "",
+      "message": "Match"
+   },
+   "tabHeaderReplace": {
+      "description": "",
+      "message": "Replace"
+   },
+   "titleIndex": {
+      "description": "",
+      "message": "RegExp tester"
+   },
+   "titlehelpPatterns": {
+      "description": "",
+      "message": "Open patterns hint dialog"
+   },
+   "titlelabelCiOption": {
+      "description": "",
+      "message": "Perform case-insensitive matching"
+   },
+   "titlelabelGlobalOption": {
+      "description": "",
+      "message": "Perform a global match (find all matches rather than stopping after the first match)"
+   },
+   "titlelabelMultilineOption": {
+      "description": "",
+      "message": "Perform multiline matching"
+   }
+}
