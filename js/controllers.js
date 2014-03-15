@@ -1,4 +1,4 @@
-function RegexpController($scope, $RegexpValues, $ChromeStorage, $RegexpWorker, $window, $timeout, $modal, $MouseTrapService, $indexedDB) {
+function RegexpController($scope, $RegexpValues, $RegexpWorker, $modal, $MouseTrapService, $indexedDB, $SyncService) {
     $scope.data = $RegexpValues;
     $scope.searchFound = 0;
     $scope.replaceFound = 0;
@@ -38,7 +38,6 @@ function RegexpController($scope, $RegexpValues, $ChromeStorage, $RegexpWorker, 
             $scope.result.highlight = result.highlight;
             $scope.result.replace = result.replace;
             $scope.searchFound = result.search_found;
-            setResultsBoxSize();
         }, function(reason) {
             console.error('worker error', reason);
         });
@@ -71,7 +70,7 @@ function RegexpController($scope, $RegexpValues, $ChromeStorage, $RegexpWorker, 
      * Called each time when form has changed
      */
     function onChange() {
-        saveSync();
+        $SyncService.sync();
         if (!$scope.data.autotest) {
             testPattern();
             return;
@@ -80,9 +79,6 @@ function RegexpController($scope, $RegexpValues, $ChromeStorage, $RegexpWorker, 
         $scope.runTest();
     }
 
-
-
-
     //watch form elements and update localstorage if change
     $scope.$watch('data', function(newValue, oldValue) {
         if (newValue === oldValue)
@@ -90,44 +86,6 @@ function RegexpController($scope, $RegexpValues, $ChromeStorage, $RegexpWorker, 
         $RegexpValues.store();
         onChange();
     }, true);
-
-
-    function setResultsBoxSize() {
-        var h = $window.innerHeight;
-        var els = document.querySelectorAll('.appresults');
-        for (var i = 0, len = els.length; i < len; i++) {
-            var el = els[i];
-            var box = el.getBoundingClientRect();
-            var top = box.top;
-            el.style.height = (h - top) + 'px';
-        }
-    }
-
-    $window.addEventListener('resize', function(e) {
-        setResultsBoxSize();
-    }, false);
-    $scope.resizeField = function() {
-        $timeout(setResultsBoxSize);
-    };
-
-    //
-    // The app will save current regexp data into sync storage.
-    // However don't do it whenever a user change the form. 20 secs of inactivity should be OK.
-    // Call this function on each form change but it will work only after 20 secs of inactivity.
-    //
-    var latestSyncTimeout = null;
-    function saveSync() {
-        if (latestSyncTimeout !== null) {
-            $timeout.cancel(latestSyncTimeout);
-            latestSyncTimeout = null;
-        }
-        latestSyncTimeout = $timeout(function() {
-            chrome.storage.sync.set({latest: $scope.data}, function() {
-                console.log('Saved state in sync');
-            });
-            latestSyncTimeout = null;
-        }, 10000);
-    }
 
     var saveModal = null, openModal = null;
     $MouseTrapService(['ctrl+s', 'command+s']).then(null, null, function() {
@@ -171,7 +129,7 @@ function RegexpController($scope, $RegexpValues, $ChromeStorage, $RegexpWorker, 
         });
     });
 }
-RegexpController.$inject = ['$scope', '$RegexpValues', '$ChromeStorage', '$RegexpWorker', '$window', '$timeout', '$modal', '$MouseTrapService', '$indexedDB'];
+RegexpController.$inject = ['$scope', '$RegexpValues', '$RegexpWorker', '$modal', '$MouseTrapService', '$indexedDB','$SyncService'];
 
 
 function SaveDialogCtrl($scope, $modalInstance) {

@@ -87,7 +87,9 @@ span.replaceHighlight{
 .open-items li.selected{
     background-color: lightgray;
 }
-
+.fullHeight{
+    overflow: auto;
+}
 @media screen and (min-width: 768px){
     .modal.fade .modal-dialog{
         width: 900px;

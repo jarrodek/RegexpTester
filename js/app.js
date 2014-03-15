@@ -1,5 +1,6 @@
 var regexpApp = angular.module('regexpApp', [
   'regexp.service',
+  'regexp.dirctive',
   'ui.bootstrap.tabs',
   'ui.bootstrap.modal',
   'ngSanitize',

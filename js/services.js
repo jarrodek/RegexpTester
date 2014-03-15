@@ -123,28 +123,57 @@ regexpServices.factory('$RegexpWorker', ['$q', '$timeout', function($q, $timeout
             run: run
         };
     }]);
-
+/**
+ * Service to keep current form in sync storage.
+ * Chrome's synch storage has limitations of amount of operations per minute 
+ * so the app should update sync storage only for a fixed period of time
+ * (after something change).
+ * Available functions:
+ * sync() - tell SyncService to perform a sync operation. It will take an action only if there waren't previous operation in set period of time.
+ */
+regexpServices.factory('$SyncService', ['$ChromeStorage', '$RegexpValues', '$timeout', function($ChromeStorage, $RegexpValues, $timeout) {
+    var service = {
+        timeout: null,
+        get delay(){ return 10000; },
+        sync: function(){
+            if (this.timeout !== null) {
+                $timeout.cancel(this.timeout);
+                this.timeout = null;
+            }
+            this.timeout = $timeout(function() {
+                $ChromeStorage.set('sync', {'latest': $RegexpValues}).then(function(){
+                    console.log('Saved sync values',$RegexpValues);
+                }, function(reason){
+                    console.error('There was an error during sync save.', reason);
+                });
+                this.timeout = null;
+            }.bind(this), 10000);
+        }
+    };
+    return service;
+}]);
 regexpServices.factory('$RegexpValues', ['$q', '$ChromeStorage', '$indexedDB', function($q, $ChromeStorage, $indexedDB) {
-  
-  var innerFunctions = ['store','restore','save','open'];
-  
-  /**
-   * Creates a new object with current values. 
-   * This object is ready to store either in local/sync storage or IndexedDb
-   * @return {Object} current values for the RegExp form.
-   */
-  function createStoreValues(){
-    var res = {};
-    for (var _key in data) {
-      if(innerFunctions.indexOf(_key) !== -1) continue;
-      if (typeof data[_key] !== 'function') {
-        res[_key] = data[_key];
-      }
-    }
-    return res;
-  }
-  
-  
+
+        var innerFunctions = ['store', 'restore', 'save', 'open'];
+
+        /**
+         * Creates a new object with current values. 
+         * This object is ready to store either in local/sync storage or IndexedDb
+         * @return {Object} current values for the RegExp form.
+         */
+        function createStoreValues() {
+            var res = {};
+            for (var _key in data) {
+                if (innerFunctions.indexOf(_key) !== -1)
+                    continue;
+                if (typeof data[_key] !== 'function') {
+                    res[_key] = data[_key];
+                }
+            }
+            return res;
+        }
+
+
         var data = {
             'regexp': '',
             'search': '',
@@ -157,8 +186,9 @@ regexpServices.factory('$RegexpValues', ['$q', '$ChromeStorage', '$indexedDB', f
                 var deferred = $q.defer();
                 var res = {};
                 for (var _key in this) {
-                  if(innerFunctions.indexOf(_key) !== -1) continue;
-                  
+                    if (innerFunctions.indexOf(_key) !== -1)
+                        continue;
+
                     if (typeof this[_key] !== 'function') {
                         res[_key] = this[_key];
                     }
@@ -171,7 +201,8 @@ regexpServices.factory('$RegexpValues', ['$q', '$ChromeStorage', '$indexedDB', f
 
                 function fillObject(restored) {
                     for (var _key in restored) {
-                      if(innerFunctions.indexOf(_key) !== -1) continue;
+                        if (innerFunctions.indexOf(_key) !== -1)
+                            continue;
                         if (typeof restored[_key] !== 'function') {
                             ctx[_key] = restored[_key];
                         }
@@ -198,27 +229,26 @@ regexpServices.factory('$RegexpValues', ['$q', '$ChromeStorage', '$indexedDB', f
                 });
 
             },
-          'save': function(note){
-            var store = $indexedDB.objectStore('regexp_store');
-            var data = createStoreValues();
-            data.note = note || '';
-            data.created = Date.now();
-            var deferred = $q.defer();
-            store.upsert(data).then(function(result){
-              console.log('Data saved', result);
-              deferred.resolve(result);
-            }, deferred.reject);
-            return deferred.promise;
-          },
-          'open': function(id){
-            var store = $indexedDB.objectStore('regexp_store');
-            var deferred = $q.defer();
-            store.find(id).then(function(result){
-              console.log('Data opened', result);
-              deferred.resolve(result);
-            }, deferred.reject);
-            return deferred.promise;
-          }
+            'save': function(note) {
+                var store = $indexedDB.objectStore('regexp_store');
+                var data = createStoreValues();
+                data.note = note || '';
+                data.created = Date.now();
+                var deferred = $q.defer();
+                store.upsert(data).then(function(result) {
+                    deferred.resolve(result);
+                }, deferred.reject);
+                return deferred.promise;
+            },
+            'open': function(id) {
+                var store = $indexedDB.objectStore('regexp_store');
+                var deferred = $q.defer();
+                store.find(id).then(function(result) {
+                    console.log('Data opened', result);
+                    deferred.resolve(result);
+                }, deferred.reject);
+                return deferred.promise;
+            }
         };
 
         return data;
@@ -226,13 +256,13 @@ regexpServices.factory('$RegexpValues', ['$q', '$ChromeStorage', '$indexedDB', f
 
 
 regexpServices.factory('$MouseTrapService', ['$q', function($q) {
-        function register(cmd){
+        function register(cmd) {
             var defered = $q.defer();
-            Mousetrap.bind(cmd, function() { 
+            Mousetrap.bind(cmd, function() {
                 defered.notify();
             });
             return defered.promise;
         }
-        
+
         return register;
-}]);
+    }]);
