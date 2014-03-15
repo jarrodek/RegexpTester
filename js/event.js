@@ -2,7 +2,7 @@ chrome.app.runtime.onLaunched.addListener(function(launchData) {
   //console.log(launchData);
   chrome.app.window.create('../index.html', {
     id: "RegexpApp",
-    minWidth: 500,
+    minWidth: 800,
     minHeight: 600
   });
 });

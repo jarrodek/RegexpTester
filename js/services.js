@@ -78,7 +78,7 @@ regexpServices.factory('$ChromeStorage', ['$q', function($q) {
         };
     }]);
 
-regexpServices.factory('$RegexpWorker', ['$q', '$timeout', function($q, $timeout) {
+regexpServices.factory('$RegexpWorker', ['$q', '$timeout', '$RegexpValues', function($q, $timeout, $RegexpValues) {
         var currentWorker = null;
         var timeoutPromise = null;
         var currentDefered = null;
@@ -92,7 +92,7 @@ regexpServices.factory('$RegexpWorker', ['$q', '$timeout', function($q, $timeout
                 timeoutPromise = null;
             }
         }
-        function run(data) {
+        function run() {
             if (currentDefered) {
                 currentDefered = null;
             }
@@ -114,11 +114,16 @@ regexpServices.factory('$RegexpWorker', ['$q', '$timeout', function($q, $timeout
                     timeoutPromise = null;
                 }
             };
+            var data = {
+                'regexp': $RegexpValues.regexp,
+                'modifiers': $RegexpValues.modifiers,
+                'search': $RegexpValues.search,
+                'replace': $RegexpValues.replace
+            };
             currentWorker.postMessage(data);
             timeoutPromise = $timeout(kill, 5000);
             return currentDefered.promise;
         }
-
         return {
             run: run
         };
@@ -131,7 +136,7 @@ regexpServices.factory('$RegexpWorker', ['$q', '$timeout', function($q, $timeout
  * Available functions:
  * sync() - tell SyncService to perform a sync operation. It will take an action only if there waren't previous operation in set period of time.
  */
-regexpServices.factory('$SyncService', ['$ChromeStorage', '$RegexpValues', '$timeout', function($ChromeStorage, $RegexpValues, $timeout) {
+regexpServices.factory('$SyncService', ['$ChromeStorage', '$RegexpValues', '$timeout', 'APP_EVENTS', '$rootScope', function($ChromeStorage, $RegexpValues, $timeout, APP_EVENTS, $rootScope) {
     var service = {
         timeout: null,
         get delay(){ return 10000; },
@@ -142,9 +147,25 @@ regexpServices.factory('$SyncService', ['$ChromeStorage', '$RegexpValues', '$tim
             }
             this.timeout = $timeout(function() {
                 $ChromeStorage.set('sync', {'latest': $RegexpValues}).then(function(){
-                    console.log('Saved sync values',$RegexpValues);
+                    $rootScope.$broadcast(APP_EVENTS.regexpValuesSynced);
                 }, function(reason){
                     console.error('There was an error during sync save.', reason);
+                    var message = null;
+                    if(reason.message.indexOf('QUOTA_BYTES_PER_ITEM') === 0){
+                        message = 'Can\'t save current form to sync storage. Too much data!';
+                    } else if(reason.message.indexOf('MAX_WRITE_OPERATIONS_PER_HOUR') === 0){
+                        message = 'Can\'t save current form to sync storage. Too many operations per hour.';
+                    } else if(reason.message.indexOf('MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE') === 0){
+                        message = 'Can\'t save current form to sync storage. Too many operations per minute.';
+                    } else if(reason.message.indexOf('MAX_ITEMS') === 0){
+                        message = 'Can\'t save current form to sync storage. Too much items!';
+                    } else if(reason.message.indexOf('QUOTA_BYTES') === 0){
+                        message = 'Can\'t save current form to sync storage. Too much data! (QUOTA_BYTES)';
+                    } else {
+                        message = 'Can\'t save current values to sync storage. Unknown error.';
+                    }
+                    
+                    $rootScope.$broadcast(APP_EVENTS.errorOccured, message, reason);
                 });
                 this.timeout = null;
             }.bind(this), 10000);
@@ -152,7 +173,7 @@ regexpServices.factory('$SyncService', ['$ChromeStorage', '$RegexpValues', '$tim
     };
     return service;
 }]);
-regexpServices.factory('$RegexpValues', ['$q', '$ChromeStorage', '$indexedDB', function($q, $ChromeStorage, $indexedDB) {
+regexpServices.factory('$RegexpValues', ['$q', '$ChromeStorage', '$indexedDB', '$rootScope', 'APP_EVENTS', function($q, $ChromeStorage, $indexedDB, $rootScope, APP_EVENTS) {
 
         var innerFunctions = ['store', 'restore', 'save', 'open'];
 
@@ -214,6 +235,7 @@ regexpServices.factory('$RegexpValues', ['$q', '$ChromeStorage', '$indexedDB', f
                         fillObject(data.latest);
                     }.bind(this), function(reason) {
                         console.error('Error restoring app data', reason);
+                        $rootScope.$broadcast(APP_EVENTS.errorOccured, 'Error restoring app data', reason);
                     });
                 }
 
@@ -248,9 +270,21 @@ regexpServices.factory('$RegexpValues', ['$q', '$ChromeStorage', '$indexedDB', f
                     deferred.resolve(result);
                 }, deferred.reject);
                 return deferred.promise;
+            },
+            get modifiers(){
+                var result = '';
+                if (data.global) {
+                    result += 'g';
+                }
+                if (data.insensitive) {
+                    result += 'i';
+                }
+                if (data.multiline) {
+                    result += 'm';
+                }
+                return result;
             }
         };
-
         return data;
     }]);
 
@@ -263,6 +297,140 @@ regexpServices.factory('$MouseTrapService', ['$q', function($q) {
             });
             return defered.promise;
         }
-
         return register;
+    }]);
+regexpServices.factory('$OpenSaveService', ['$q','$MouseTrapService','$modal','$RegexpValues','$indexedDB','$rootScope','APP_EVENTS', function($q,$MouseTrapService,$modal,$RegexpValues,$indexedDB,$rootScope,APP_EVENTS) {
+        var saveModal = null, openModal = null;
+        
+        function openAction(){
+            if (openModal !== null)
+                return;
+            
+            openModal = $modal.open({
+                templateUrl: 'partials/opendialog.html',
+                controller: OpenDialogCtrl,
+                resolve: {
+                    '$indexedDB': function() {
+                        return $indexedDB;
+                    },
+                    '$rootScope': function(){
+                        return $rootScope;
+                    },
+                    'APP_EVENTS': function() {
+                        return APP_EVENTS;
+                    }
+                }
+            });
+            openModal.result.then(function(rg) {
+                openModal = null;
+                $RegexpValues.regexp = rg.regexp;
+                $RegexpValues.search = rg.search;
+                $RegexpValues.replace = rg.replace;
+                $RegexpValues.multiline = rg.multiline;
+                $RegexpValues.insensitive = rg.insensitive;
+                $RegexpValues.global = rg.global;
+                $RegexpValues.autotest = rg.autotest;
+                $RegexpValues.store();
+            }, function() {
+                openModal = null;
+                //cancel or esc
+            });
+        }
+        function saveAction(){
+            if (saveModal !== null)
+                return;
+            
+            if($RegexpValues.regexp.trim() === ''){
+                $rootScope.$broadcast(APP_EVENTS.errorOccured, 'You must enter regexp first.');
+                return;
+            }
+            
+            
+            saveModal = $modal.open({
+                templateUrl: 'partials/savedialog.html',
+                controller: SaveDialogCtrl,
+                resolve: {
+                    '$indexedDB': function() {
+                        return $indexedDB;
+                    },
+                    '$RegexpValues': function(){
+                        return $RegexpValues;
+                    }
+                }
+            });
+            saveModal.result.then(function(note) {
+                saveModal = null;
+                $RegexpValues.save(note);
+                $rootScope.$broadcast(APP_EVENTS.regexpValuesSaved);
+            }, function() {
+                saveModal = null;
+                //cancel or esc
+            });
+        }
+        function SaveDialogCtrl($scope, $modalInstance, $indexedDB, $RegexpValues) {
+            $scope.note = '';
+            $scope.override = false;
+            $scope.cancel = function() {
+                $modalInstance.dismiss('cancel');
+            };
+            $scope.save = function(note) {
+                $modalInstance.close(note);
+            };
+            
+            var checkCurrentSaved = function(){
+                var key = $RegexpValues.regexp;
+                var store = $indexedDB.objectStore('regexp_store');
+                store.find(key).then(function(item) {
+                    if(!!item){
+                        $scope.override = true;
+                        $scope.note = item.note;
+                    }
+                }, function(reason) {
+                    console.error('Unable to find a key',reason);
+                });
+            };
+            checkCurrentSaved();
+        }
+        function OpenDialogCtrl($scope, $modalInstance, $indexedDB,$rootScope,APP_EVENTS) {
+            $scope.items = [];
+            $scope.selected = {
+                item: null
+            };
+            $scope.loading = true;
+            $scope.disabledSelect = true;
+            function restoreAll() {
+                var store = $indexedDB.objectStore('regexp_store');
+                store.getAll().then(function(items) {
+                    $scope.loading = false;
+                    $scope.items = items;
+                }, function(reason) {
+                    //todo: error message
+                    $rootScope.$broadcast(APP_EVENTS.errorOccured, 'There was an error retriving data from database :( Try again.');
+                });
+            }
+
+            restoreAll();
+            $scope.select = function(item) {
+                $scope.selected.item = item;
+                $scope.disabledSelect = false;
+            };
+            $scope.apply = function() {
+                $modalInstance.close($scope.selected.item);
+            };
+
+            $scope.cancel = function() {
+                $modalInstance.dismiss('cancel');
+            };
+        }
+        
+        function registerHandlers(){
+            $MouseTrapService(['ctrl+s', 'command+s']).then(null, null, saveAction);
+            $MouseTrapService(['ctrl+o', 'command+o']).then(null, null, openAction);
+        }
+
+        return {
+            'register': registerHandlers,
+            'open': openAction,
+            'save': saveAction
+        };
     }]);

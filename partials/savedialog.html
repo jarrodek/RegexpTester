@@ -5,11 +5,11 @@
             <h3>Save</h3>
         </div>
         <div class="modal-body">
+            <alert ng-if="override" type="warning">You will override existing entry.</alert>
             <div class="form-group">
                 <label class="" for="note">Your note</label>
                 <input type="text" class="form-control" id="note" placeholder="You can add some note if you want" ng-model="note">
             </div>
-          Note: {{note}}
         </div>
         <div class="modal-footer">
             <button class="btn btn-default" ng-click="cancel()">Close</button>

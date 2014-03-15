@@ -3,14 +3,19 @@
     <head>
         <meta charset="utf-8"/>
         <title>Regexp tester</title>
-        <link rel="stylesheet" media="all" href="css/main.css">
         <link rel="stylesheet" media="all" href="lib/bootstrap-3.0.2/css/bootstrap.min.css">
         <link rel="stylesheet" media="all" href="lib/angular-1.2.0/angular-csp.css">
+        <link rel="stylesheet" media="all" href="css/main.css">
         <base target="_blank">
     </head>
     <body data-ng-controller="RegexpController">
         <div class="container">
             <section id="main">
+                <div class="row" ng-if="error">
+                    <div class="col-md-12">
+                        <alert ng-if="error" type="danger" close="closeErrorAlert()">{{error}}</alert>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="col-md-12">
                         <label for="regexp">Regular expression</label>
@@ -18,7 +23,7 @@
                             <span class="glyphicon glyphicon-question-sign" ng-click="openHelpDialog()"></span>
                         </span>
                         <div class="input-group" ng-class="{'has-error':invalidPattern}">
-                            <input ng-model="data.regexp" type="text" class="form-control" id="regexp" placeholder="Enter a regexp to test" />
+                            <input popover-placement="bottom" popover-popup-delay="1500" popover-trigger="mouseenter" popover="Place a regexp to test here." ng-model="data.regexp" type="text" class="form-control" id="regexp" placeholder="Enter a regexp to test" />
                             <span class="input-group-addon">
                                 <label class="normal"><input type="checkbox" class="middle" ng-model="data.autotest"> autotest</label>
                             </span>
@@ -27,32 +32,36 @@
                 </div>
                 <div class="row">
                     <div class="col-md-12 form-group">
-                        <label class="checkbox-inline">
+                        <label class="checkbox-inline" popover-placement="right" tooltip-append-to-body="true" popover-popup-delay="500" popover-trigger="mouseenter" popover="Perform a global (in whole search text) evaluation">
                             <input type="checkbox" value="g" ng-model="data.global"> global
                         </label>
-                        <label class="checkbox-inline">
+                        <label class="checkbox-inline"  popover-placement="bottom" tooltip-append-to-body="true" popover-popup-delay="500" popover-trigger="mouseenter" popover="Evaluate an expression in multilines (if any).">
                             <input type="checkbox" value="m" ng-model="data.multiline"> multiline
                         </label>
-                        <label class="checkbox-inline">
+                        <label class="checkbox-inline" popover-placement="bottom" tooltip-append-to-body="true" popover-popup-delay="500" popover-trigger="mouseenter" popover="Will not mind char case">
                             <input type="checkbox" value="i" ng-model="data.insensitive"> case insensitive
                         </label>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-12 form-group">
-                        <label for="searchText">Test text</label>
+                        <label for="searchText" popover-placement="right" tooltip-append-to-body="true" popover-popup-delay="500" popover-trigger="mouseenter" popover="Search string. Matches will be hightlighted in result window.">Test text</label>
                         <textarea class="form-control" id="searchText" rows="3" ng-model="data.search" placeholder="Enter test text on which regexp will be performed"></textarea>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-12 form-group">
-                        <label for="replaceText">Replace text</label>
+                        <label for="replaceText" popover-placement="right" tooltip-append-to-body="true" popover-popup-delay="500" popover-trigger="mouseenter" popover="Replace matched to this input value. You can use group symbol to insert founded group (eg. $1)">Replace text</label>
                         <textarea class="form-control" id="replaceText" rows="3" ng-model="data.replace" placeholder="Enter replacement if you want to replace highlighted text"></textarea>
                     </div>
                 </div>
-                <div class="row" ng-hide="data.autotest">
+                <div class="row">
                     <div class="col-md-12 form-group">
-                        <button type="button" class="btn btn-primary manual-test" ng-click="runTest()">Do test</button>
+                        <div class="btn-group">
+                            <button type="button" ng-click="openDialog()" class="btn btn-default">Open</button>
+                            <button type="button" ng-click="saveDialog()" class="btn btn-default">Save</button>
+                        </div>
+                        <button ng-hide="data.autotest" ng-disabled="!data.regexp || !data.search" type="button" class="btn btn-primary manual-test" ng-click="runTest()">Do test</button>
                     </div>
                 </div>
 
@@ -62,13 +71,13 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <!--<div class="match" ng-bind-html="result.highlight"></div>-->
-                                    <div class="match" full-height html="result.highlight"></div>
+                                    <div class="match results-tab" full-height html="result.highlight"></div>
                                 </div>
                             </div>
                         </tab>
                         <tab heading="Replace results" ng-if="data.replace.trim() !== ''">
                             <!--<div class="match" ng-bind-html="result.replace"></div>-->
-                            <div class="match" full-height html="result.replace"></div>
+                            <div class="match results-tab" full-height html="result.replace"></div>
                         </tab>
                     </tabset>
                 </div>
@@ -77,6 +86,11 @@
         <script src="lib/angular-1.2.0/angular.js"></script>
         <script src="lib/angular-1.2.0/ui/tabs/tabs.js"></script>
         <script src="lib/angular-1.2.0/ui/modal/modal.js"></script>
+        <script src="lib/angular-1.2.0/ui/tooltip/tooltip.js"></script>
+        <script src="lib/angular-1.2.0/ui/popover/popover.js"></script>
+        <script src="lib/angular-1.2.0/ui/bindHtml/bindHtml.js"></script>
+        <script src="lib/angular-1.2.0/ui/position/position.js"></script>
+        <script src="lib/angular-1.2.0/ui/alert/alert.js"></script>
         <script src="lib/angular-1.2.0/angular-sanitize.js"></script>
         <script src="lib/mousetrap.min.js"></script>
         <script src="js/upload.js"></script>

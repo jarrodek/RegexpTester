@@ -1,6 +1,6 @@
 var regexpDirectives = angular.module('regexp.dirctive', []);
 
-regexpDirectives.directive('fullHeight', ['$window', '$timeout', function($window, $timeout) {
+regexpDirectives.directive('fullHeight', ['$window', function($window) {
     return {
         restrict: 'A',
         scope: {
@@ -15,17 +15,17 @@ regexpDirectives.directive('fullHeight', ['$window', '$timeout', function($windo
                 var top = box.top;
                 element[0].style.height = (h - top) + 'px';
             };
-            $window.addEventListener('resize', function(e) {
-                setResultsBoxSize();
-            }, false);
+            
             element.css('overflow','auto');
-//            $timeout(function(){
-//                setResultsBoxSize();
-//            },100);
             scope.$watch('html', function(newValue, oldValue) {
                 if (newValue === oldValue)
                     return;
                 setResultsBoxSize();
+            });
+            
+            $window.addEventListener('resize', setResultsBoxSize, false);
+            scope.$on('$destroy', function onDestroyElement() {
+                $window.removeEventListener('resize', setResultsBoxSize, false);
             });
         }
     };

@@ -1,3 +1,5 @@
+html, body{height: 100%;}
+body{background-color: #e5e5e5;}
 .middle{
     vertical-align: middle;
 }
@@ -59,8 +61,14 @@ span.replaceHighlight{
     padding: 3px 5px;
     border-bottom: 1px #e5e5e5 dotted;
     cursor: pointer;
+    display: flex;
 }
-
+.open-items > li:hover {
+    background-color: #F1F1F1;
+}
+.open-items > li > span {
+    display: block;
+}
 
 .regexp-display-date,
 .regexp-display-notes,
@@ -73,25 +81,41 @@ span.replaceHighlight{
     vertical-align: middle;
 }
 .regexp-display-date{
-    width: 29%;
+    min-width: 90px;
+    text-align: right;
 }
-.regexp-display-notes,
 .regexp-display-value{
     width: 34%;
+}
+.regexp-display-notes{
+    flex: 1 1 auto;
+    width: auto;
 }
 .regexp-display-date,
 .regexp-display-value {
     font-size: 0.8em;
     color: gray;
 }
-.open-items li.selected{
+.open-items li.selected,
+.open-items li.selected:hover{
     background-color: lightgray;
 }
 .fullHeight{
     overflow: auto;
 }
+.results-tab{
+    background-color: #fff;
+    padding: 10px;
+    -webkit-user-select: text;
+}
+
+.modal-body{
+    max-height: 60vh;
+    overflow: auto;
+}
+
 @media screen and (min-width: 768px){
     .modal.fade .modal-dialog{
-        width: 900px;
+        width: 95%;
     }
 }
