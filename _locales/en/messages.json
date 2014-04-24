@@ -21,11 +21,11 @@
    },
    "extensionDesc": {
       "description": "Extension main description.",
-      "message": "Create and test regular expressions."
+      "message": "Test your regular expressions in the fly."
    },
    "extensionName": {
       "description": "Extension main name.",
-      "message": "RegExp Tester App"
+      "message": "RegExp Tester"
    },
    "indexHeaderMain": {
       "description": "",

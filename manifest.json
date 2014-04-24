@@ -1,7 +1,7 @@
 {
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDesc__",
-  "version": "0.3",
+  "version": "1.0",
   "manifest_version": 2,
   "app": {
     "background": {
@@ -9,10 +9,9 @@
     }
   },
   "icons": { 
-      "16": "img/emblem-brackets-16.png",
-      "32": "img/emblem-brackets-32.png",
-      "48": "img/emblem-brackets-48.png",
-      "128": "img/emblem-brackets-128.png"
+      "16": "img/regexp_16.png",
+      "48": "img/regexp_48.png",
+      "128": "img/regexp_128.png"
   },
   "permissions": [
     "storage"

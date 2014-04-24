@@ -96,6 +96,7 @@ ResultController.$inject = ['$scope'];
  * TODO: is it should be a directive?
  * @param {type} $scope
  * @param {type} $modal
+ * @param {type} $http
  * @returns {ModalHelpCtrl}
  */
 function ModalHelpCtrl($scope, $modal, $http) {
