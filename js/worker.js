@@ -20,7 +20,7 @@ function getResults(data){
         return result;
     }
     var body = data.search;
-    
+
     result.search_found = countMatch(data, compiledPattern);
     result.highlight = highlight({
         pattern: compiledPattern,
@@ -55,12 +55,14 @@ function highlight(opt) {
     return highlight;
 }
 function replace(opt) {
-    if (!opt.replace.trim()) {
+    /*if (opt.replace.length === 0) {
         return '';
-    }
+    }*/
     var match = opt.body.match(opt.pattern);
     var replace = opt.replace;
+    replace = replace.replace(/ /gm, '&nbsp;');
     replace = replace.replace(/\$0/, match);
+
     //
     // because in this app the expression is wrapped in () any use of $ + number must be increased here.
     //

@@ -20,7 +20,7 @@
                 </li>
             </ul>
         </aside>
-        
+
         <div class="container">
             <section id="main">
                 <div class="row" ng-if="error">
@@ -64,7 +64,7 @@
                 <div class="row">
                     <div class="col-md-12 form-group">
                         <label for="replaceText" popover-placement="right" tooltip-append-to-body="true" popover-popup-delay="500" popover-trigger="mouseenter" popover="Replace matched to this input value. You can use group symbol to insert founded group (eg. $1)">Replace text</label>
-                        <textarea class="form-control" id="replaceText" rows="3" ng-model="data.replace" placeholder="Enter replacement if you want to replace highlighted text"></textarea>
+                        <textarea class="form-control" id="replaceText" rows="3" ng-model="data.replace" ng-trim="false" placeholder="Enter replacement if you want to replace highlighted text"></textarea>
                     </div>
                 </div>
                 <div class="row">
@@ -86,7 +86,7 @@
                                 </div>
                             </div>
                         </tab>
-                        <tab heading="Replace results" ng-if="data.replace.trim() !== ''">
+                        <tab heading="Replace results">
                             <div class="match results-tab" full-height html="result.replace"></div>
                         </tab>
                     </tabset>

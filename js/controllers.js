@@ -13,13 +13,13 @@ function RegexpController($scope, $RegexpValues, $RegexpWorker, $OpenSaveService
         $scope.error = null;
         $scope.error = msg;
     });
-    
+
     $RegexpValues.restore();
-    
+
     $scope.closeErrorAlert = function(){
         $scope.error = null;
     };
-    
+
     function cleanupResults() {
         $scope.result.highlight = $scope.result.replace = '';
         $scope.searchFound = 0;
@@ -38,7 +38,6 @@ function RegexpController($scope, $RegexpValues, $RegexpWorker, $OpenSaveService
             }
             if ($scope.invalidPattern)
                 $scope.invalidPattern = false;
-
             $scope.result.highlight = result.highlight;
             $scope.result.replace = result.replace;
             $scope.searchFound = result.search_found;
@@ -101,12 +100,12 @@ ResultController.$inject = ['$scope'];
  */
 function ModalHelpCtrl($scope, $modal, $http) {
     var ModalInstanceCtrl = function($scope, $modalInstance,$http) {
-        
+
         $scope.data = null;
         $scope.cancel = function() {
             $modalInstance.dismiss('cancel');
         };
-        
+
         $http.get(chrome.runtime.getURL('data/patterns_definitions.json')).then(function(data){
             $scope.data = data.data;
         });
